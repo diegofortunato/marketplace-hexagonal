@@ -1,4 +1,4 @@
-package com.itau.orange.marketplace.core.service
+package com.itau.orange.marketplace.usecase
 
 import com.itau.orange.marketplace.Customer
 import com.itau.orange.marketplace.FindAllRequest
@@ -6,16 +6,16 @@ import com.itau.orange.marketplace.FindAllResponse
 import com.itau.orange.marketplace.FindCustomerRequest
 import com.itau.orange.marketplace.SaveCustomerRequest
 import com.itau.orange.marketplace.UpdateCustomerRequest
-import com.itau.orange.marketplace.adapter.api.exception.CustomerNotFoundException
-import com.itau.orange.marketplace.adapter.api.extension.toCustomerEntity
-import com.itau.orange.marketplace.adapter.datastore.entity.CustomerEntity
-import com.itau.orange.marketplace.adapter.datastore.repository.CustomerRepository
-import com.itau.orange.marketplace.core.port.CustomerServicePort
+import com.itau.orange.marketplace.adapter.out.entity.CustomerEntity
+import com.itau.orange.marketplace.exception.CustomerNotFoundException
+import com.itau.orange.marketplace.extension.toCustomerEntity
+import com.itau.orange.marketplace.port.`in`.CustomerInputPort
+import com.itau.orange.marketplace.port.out.CustomerOutputPort
 import io.micronaut.data.model.Pageable
 
-class CustomerService(
-    private val customeRepository: CustomerRepository
-) : CustomerServicePort {
+class CustomerUseCase(
+    private val customerOutputPort: CustomerOutputPort
+) : CustomerInputPort {
 
     override fun findAllCustomer(request: FindAllRequest): FindAllResponse = findAll(request)
 
@@ -28,7 +28,7 @@ class CustomerService(
     override fun deleteCustomer(request: FindCustomerRequest): Customer = delete(request)
 
     private fun findAll(request: FindAllRequest): FindAllResponse {
-        val customers = customeRepository.findAll(Pageable.from(request.page, request.size))
+        val customers = customerOutputPort.findAll(Pageable.from(request.page, request.size))
 
         val customerBuilder = FindAllResponse.newBuilder()
         customers.forEach { it ->
@@ -40,34 +40,34 @@ class CustomerService(
     }
 
     private fun findById(request: FindCustomerRequest): Customer {
-        val customer = customeRepository.findById(request.id)
+        val customer = customerOutputPort.findById(request.id)
             .orElseThrow { CustomerNotFoundException(request.id) }
 
         return customerBuild(customer)
     }
 
     private fun save(request: SaveCustomerRequest): Customer {
-        val customer = customeRepository.save(request.toCustomerEntity())
+        val customer = customerOutputPort.save(request.toCustomerEntity())
 
         return customerBuild(customer)
     }
 
     private fun update(request: UpdateCustomerRequest): Customer {
-        val customer = customeRepository.findById(request.id)
+        val customer = customerOutputPort.findById(request.id)
             .orElseThrow { CustomerNotFoundException(request.id) }
 
         customeUpdate(customer, request)
 
-        val newCustomer = customeRepository.update(customer)
+        val newCustomer = customerOutputPort.update(customer)
 
         return customerBuild(newCustomer)
     }
 
     private fun delete(request: FindCustomerRequest): Customer {
-        val customer = customeRepository.findById(request.id)
+        val customer = customerOutputPort.findById(request.id)
             .orElseThrow { CustomerNotFoundException(request.id) }
 
-        customeRepository.delete(customer)
+        customerOutputPort.delete(customer)
 
         return customerBuild(customer)
     }

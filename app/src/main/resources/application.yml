@@ -9,4 +9,9 @@ datasources:
     password: ${JDBC_PASSWORD:mysecretpassword}
     schema-generate: CREATE_DROP
     dialect: POSTGRES
-jpa.default.properties.hibernate.hbm2ddl.auto: update
+jpa:
+  default:
+    properties:
+      hibernate:
+        hbm2ddl:
+          auto: update

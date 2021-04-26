@@ -1,4 +1,4 @@
-package com.itau.orange.marketplace.adapter.api.controller
+package com.itau.orange.marketplace.adapter.`in`
 
 import com.itau.orange.marketplace.Customer
 import com.itau.orange.marketplace.CustomerServiceGrpcKt
@@ -7,10 +7,10 @@ import com.itau.orange.marketplace.FindAllResponse
 import com.itau.orange.marketplace.FindCustomerRequest
 import com.itau.orange.marketplace.SaveCustomerRequest
 import com.itau.orange.marketplace.UpdateCustomerRequest
-import com.itau.orange.marketplace.adapter.api.exception.CustomerNotFoundException
-import com.itau.orange.marketplace.adapter.api.exception.InternalErrorException
-import com.itau.orange.marketplace.adapter.api.exception.InvalidCustomerIdException
-import com.itau.orange.marketplace.core.port.CustomerServicePort
+import com.itau.orange.marketplace.exception.CustomerNotFoundException
+import com.itau.orange.marketplace.exception.InternalErrorException
+import com.itau.orange.marketplace.exception.InvalidCustomerIdException
+import com.itau.orange.marketplace.port.`in`.CustomerInputPort
 import io.grpc.Status
 import io.grpc.StatusException
 import kotlinx.coroutines.flow.Flow
@@ -20,13 +20,13 @@ import org.slf4j.LoggerFactory
 import javax.inject.Singleton
 
 @Singleton
-class CustomerController(private val customerServicePort: CustomerServicePort) :
+class CustomerGRPCAdapter(private val customerInputPort: CustomerInputPort) :
     CustomerServiceGrpcKt.CustomerServiceCoroutineImplBase() {
 
     private val log = LoggerFactory.getLogger(javaClass)
 
     override suspend fun findAllCustomers(request: FindAllRequest) = runCatching {
-        customerServicePort.findAllCustomer(request).also {
+        customerInputPort.findAllCustomer(request).also {
             log.info("Find All Customers")
         }
     }.onFailure { throw it.toStatusException() }.getOrThrow()
@@ -34,7 +34,7 @@ class CustomerController(private val customerServicePort: CustomerServicePort) :
     override fun findAllCustomersStream(request: FindAllRequest): Flow<FindAllResponse> = flow {
         log.info("Find All Customers Stream")
 
-        val customers = customerServicePort.findAllCustomer(request)
+        val customers = customerInputPort.findAllCustomer(request)
 
         val customerBuilder = FindAllResponse.newBuilder()
         customers.customersList.forEach { it ->
@@ -43,40 +43,40 @@ class CustomerController(private val customerServicePort: CustomerServicePort) :
     }
 
     override suspend fun findCustomerById(request: FindCustomerRequest) = runCatching {
-        customerServicePort.findCustomerById(request).also {
+        customerInputPort.findCustomerById(request).also {
             log.info("Find Customer by ID: ", request.id)
         }
     }.onFailure { throw it.toStatusException() }.getOrThrow()
 
     override suspend fun saveCustomer(request: SaveCustomerRequest): Customer {
-        return customerServicePort.saveCustomer(request).also {
+        return customerInputPort.saveCustomer(request).also {
             log.info("Customer saved")
         }
     }
 
     override fun saveCustomerStream(requests: Flow<SaveCustomerRequest>): Flow<Customer> = flow {
         log.info("Customer Stream save")
-        requests.collect { emit(customerServicePort.saveCustomer(it)) }
+        requests.collect { emit(customerInputPort.saveCustomer(it)) }
     }
 
     override suspend fun updateCustomer(request: UpdateCustomerRequest): Customer {
         log.info("Customer Updated")
-        return customerServicePort.updateCustomer(request)
+        return customerInputPort.updateCustomer(request)
     }
 
     override fun updateCustomerStream(requests: Flow<UpdateCustomerRequest>): Flow<Customer> = flow {
         log.info("Customer Stream Updated")
-        requests.collect { emit(customerServicePort.updateCustomer(it)) }
+        requests.collect { emit(customerInputPort.updateCustomer(it)) }
     }
 
     override suspend fun deleteCustomer(request: FindCustomerRequest): Customer {
         log.info("Customer Delete")
-        return customerServicePort.deleteCustomer(request)
+        return customerInputPort.deleteCustomer(request)
     }
 
     override fun deleteCustomerStream(requests: Flow<FindCustomerRequest>): Flow<Customer> = flow {
         log.info("Customer Stream Delete")
-        requests.collect { emit(customerServicePort.deleteCustomer(it)) }
+        requests.collect { emit(customerInputPort.deleteCustomer(it)) }
     }
 
     private fun Throwable.toStatusException() = when (this) {

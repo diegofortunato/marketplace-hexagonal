@@ -2,30 +2,29 @@ package com.itau.orange.marketplace
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
-import com.itau.orange.marketplace.adapter.datastore.entity.AddressEntity
-import com.itau.orange.marketplace.adapter.datastore.entity.CustomerEntity
-import com.itau.orange.marketplace.adapter.datastore.repository.CustomerRepository
-import com.itau.orange.marketplace.core.service.CustomerService
-import io.micronaut.data.model.Page
+import com.itau.orange.marketplace.adapter.out.entity.AddressEntity
+import com.itau.orange.marketplace.adapter.out.entity.CustomerEntity
+import com.itau.orange.marketplace.port.out.CustomerOutputPort
+import com.itau.orange.marketplace.usecase.CustomerUseCase
 import io.micronaut.data.model.Pageable
 import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
 import java.util.Optional
-import kotlin.collections.ArrayList
+import java.util.stream.Stream
 
 class CustomerServiceTest {
 
     @Test
     fun `should find all Customers`() {
-        val customerRepository = mockk<CustomerRepository>()
-        val customerService = CustomerService(customerRepository)
+        val customerOutputPort = mockk<CustomerOutputPort>()
+        val customerService = CustomerUseCase(customerOutputPort)
 
         val request = FindAllRequest.newBuilder().setPage(1).setSize(10).build()
         val responseService = customerList()
 
-        every { customerRepository.findAll(Pageable.from(request.page, request.size)) } returns Page.of(responseService, Pageable.UNPAGED, 2)
+        every { customerOutputPort.findAll(Pageable.from(request.page, request.size)) } returns responseService
 
         val findAllResponse = customerService.findAllCustomer(request)
 
@@ -38,13 +37,13 @@ class CustomerServiceTest {
 
     @Test
     fun `should find Customers by ID`() {
-        val customerRepository = mockk<CustomerRepository>()
-        val customerService = CustomerService(customerRepository)
+        val customerOutputPort = mockk<CustomerOutputPort>()
+        val customerService = CustomerUseCase(customerOutputPort)
         val request = FindCustomerRequest.newBuilder().setId(1L).build()
 
         val response = saveCustomer(1L, "John", "Street 1", 1, "000001")
 
-        every { customerRepository.findById(1L) } returns Optional.of(response)
+        every { customerOutputPort.findById(1L) } returns Optional.of(response)
 
         val customer = customerService.findCustomerById(request)
 
@@ -57,13 +56,13 @@ class CustomerServiceTest {
 
     @Test
     fun `should save Customer`() {
-        val customerRepository = mockk<CustomerRepository>()
-        val customerService = CustomerService(customerRepository)
+        val customerOutputPort = mockk<CustomerOutputPort>()
+        val customerService = CustomerUseCase(customerOutputPort)
 
         val savedCustomerEntity = saveCustomer(1L, "John", "Street 1", 1, "000001")
         val request = saveCustomerRequest("John", "Street 1", 1, "000001")
 
-        every { customerRepository.save(ofType(CustomerEntity::class)) } returns savedCustomerEntity
+        every { customerOutputPort.save(ofType(CustomerEntity::class)) } returns savedCustomerEntity
 
         val customer = customerService.saveCustomer(request)
 
@@ -76,15 +75,15 @@ class CustomerServiceTest {
 
     @Test
     fun `should update Customer`() {
-        val customerRepository = mockk<CustomerRepository>()
-        val customerService = CustomerService(customerRepository)
+        val customerOutputPort = mockk<CustomerOutputPort>()
+        val customerService = CustomerUseCase(customerOutputPort)
 
         val response = saveCustomer(1L, "John", "Street 1", 1, "000001")
         val request = updateCustomer(1L, "John", "Street 1", 2, "000001")
         val updatedCustomerEntity = saveCustomer(1L, "John", "Street 1", 2, "000001")
 
-        every { customerRepository.findById(1L) } returns Optional.of(response)
-        every { customerRepository.update(ofType(CustomerEntity::class)) } returns updatedCustomerEntity
+        every { customerOutputPort.findById(1L) } returns Optional.of(response)
+        every { customerOutputPort.update(ofType(CustomerEntity::class)) } returns updatedCustomerEntity
 
         val customer = customerService.updateCustomer(request)
 
@@ -97,14 +96,14 @@ class CustomerServiceTest {
 
     @Test
     fun `should delete Customer`() {
-        val customerRepository = mockk<CustomerRepository>()
-        val customerService = CustomerService(customerRepository)
+        val customerOutputPort = mockk<CustomerOutputPort>()
+        val customerService = CustomerUseCase(customerOutputPort)
 
         val request = FindCustomerRequest.newBuilder().setId(1L).build()
         val response = saveCustomer(1L, "John", "Street 1", 1, "000001")
 
-        every { customerRepository.findById(1L) } returns Optional.of(response)
-        justRun { customerRepository.delete(ofType(CustomerEntity::class)) }
+        every { customerOutputPort.findById(1L) } returns Optional.of(response)
+        justRun { customerOutputPort.delete(ofType(CustomerEntity::class)) }
 
         val customer = customerService.deleteCustomer(request)
 
@@ -141,12 +140,12 @@ class CustomerServiceTest {
             .build()
     }
 
-    private fun customerList(): ArrayList<CustomerEntity> {
+    private fun customerList(): Stream<CustomerEntity> {
         val customerList = arrayListOf<CustomerEntity>()
 
         customerList.add(saveCustomer(1L, "John", "Street", 1, "000012"))
         customerList.add(saveCustomer(2L, "Michael", "Street", 2, "000012"))
 
-        return customerList
+        return customerList.stream()
     }
 }

@@ -1,8 +1,8 @@
-package com.itau.orange.marketplace.adapter.api.extension
+package com.itau.orange.marketplace.extension
 
 import com.itau.orange.marketplace.SaveCustomerRequest
-import com.itau.orange.marketplace.adapter.datastore.entity.AddressEntity
-import com.itau.orange.marketplace.adapter.datastore.entity.CustomerEntity
+import com.itau.orange.marketplace.adapter.out.entity.AddressEntity
+import com.itau.orange.marketplace.adapter.out.entity.CustomerEntity
 
 fun SaveCustomerRequest.toCustomerEntity() = CustomerEntity(
     id = null,

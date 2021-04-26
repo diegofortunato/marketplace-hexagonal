@@ -1,4 +1,4 @@
-package com.itau.orange.marketplace.adapter.api.exception
+package com.itau.orange.marketplace.exception
 
 data class CustomerNotFoundException(
     val id: Long,
