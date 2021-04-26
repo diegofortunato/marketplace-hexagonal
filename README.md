@@ -22,6 +22,6 @@ Esse repositório está organizado na seguinte estrutura:
 - pipeline: configurações do pipeline
 - tests: configurações de teste
 
-Para saber mais sobre o desenvolvimento da aplicação e sua execução acesse o [APP](https://github.com/diegofortunato/marketplace-mvc/tree/master/app)
+Para saber mais sobre o desenvolvimento da aplicação e sua execução acesse o [APP](https://github.com/diegofortunato/marketplace-hexagonal/tree/master/app)
 
 
