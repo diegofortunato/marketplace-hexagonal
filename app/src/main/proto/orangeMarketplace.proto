@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.itau.orange.marketplace";
+option java_outer_classname = "OrangeMarketplace";
+option objc_class_prefix = "HLW";
+
+package com.itau.orange.marketplace;
+
+import "google/api/annotations.proto";
+
+service CustomerService {
+
+  rpc FindAllCustomers(FindAllRequest) returns (FindAllResponse) {}
+
+  rpc FindAllCustomersStream(FindAllRequest) returns (stream FindAllResponse) {}
+
+  rpc FindCustomerById (FindCustomerRequest) returns (Customer) {
+    option (google.api.http) = {
+      get: "/customer/{id}"
+    };
+  }
+
+  rpc SaveCustomer (SaveCustomerRequest) returns (Customer) {
+    option (google.api.http) = {
+      post: "/customer"
+      body: "*"
+    };
+  }
+
+  rpc SaveCustomerStream (stream SaveCustomerRequest) returns (stream Customer) {}
+
+  rpc UpdateCustomer (UpdateCustomerRequest) returns (Customer) {
+    option (google.api.http) = {
+      patch: "/customer/{id}"
+      body: "*"
+    };
+  }
+
+  rpc UpdateCustomerStream (stream UpdateCustomerRequest) returns (stream Customer) {}
+
+  rpc DeleteCustomer (FindCustomerRequest) returns (Customer) {
+    option (google.api.http) = {
+      delete: "/customer/{id}"
+    };
+  }
+
+  rpc DeleteCustomerStream (stream FindCustomerRequest) returns (stream Customer) {}
+}
+
+message FindCustomerRequest {
+  int64 id = 1;
+}
+
+message FindAllRequest {
+  int32 page = 1;
+  int32 size = 2;
+}
+
+message FindAllResponse {
+  repeated Customer customers = 1;
+}
+
+message SaveCustomerRequest {
+  string name = 1;
+  string street = 2;
+  int32 streetNumber = 3;
+  string zipCode = 4;
+}
+
+message UpdateCustomerRequest {
+  int64 id = 1;
+  string name = 2;
+  string street = 3;
+  int32 streetNumber = 4;
+  string zipCode = 5;
+}
+
+message Customer {
+  int64 id = 1;
+  string name = 2;
+  string street = 3;
+  int32 streetNumber = 4;
+  string zipCode = 5;
+}

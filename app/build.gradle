@@ -1,0 +1,129 @@
+plugins {
+    id("org.jetbrains.kotlin.jvm") version "1.4.30"
+    id("org.jetbrains.kotlin.kapt") version "1.4.30"
+    id("org.jetbrains.kotlin.plugin.allopen") version "1.4.30"
+    id("org.jetbrains.kotlin.plugin.jpa") version "1.4.30"
+    id("com.github.johnrengelman.shadow") version "6.1.0"
+    id("io.micronaut.application") version "1.4.2"
+    id("com.google.protobuf") version "0.8.13"
+}
+
+version = "0.1"
+group = "com.itau.orange.marketplace"
+
+repositories {
+    mavenCentral()
+}
+
+micronaut {
+    testRuntime("junit5")
+    processing {
+        incremental(true)
+        annotations("com.itau.orange.marketplace.*")
+    }
+}
+
+dependencies {
+    implementation("io.grpc:protoc-gen-grpc-kotlin:1.0.0")
+    api("io.grpc:grpc-kotlin-stub:1.0.0")
+    kapt("io.micronaut.data:micronaut-data-processor")
+    implementation("io.micronaut:micronaut-runtime")
+    implementation("io.micronaut.data:micronaut-data-hibernate-jpa")
+    implementation("io.micronaut.grpc:micronaut-grpc-runtime")
+    implementation("io.micronaut.kotlin:micronaut-kotlin-runtime")
+    implementation("io.micronaut.sql:micronaut-jdbc-hikari")
+    implementation("io.micronaut:micronaut-tracing")
+    implementation("javax.annotation:javax.annotation-api")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:'1.4.3'")
+    implementation("org.apache.logging.log4j:log4j-core:2.14.1")
+    implementation("io.micronaut:micronaut-validation")
+    testImplementation("org.testcontainers:junit-jupiter")
+    testImplementation("org.testcontainers:postgresql")
+    testImplementation("org.testcontainers:testcontainers")
+    testImplementation("io.mockk:mockk:1.4.1")
+    testImplementation("io.micronaut:micronaut-http-client")
+    testCompile("com.willowtreeapps.assertk:assertk-jvm:0.23.1")
+    runtimeOnly("ch.qos.logback:logback-classic")
+    runtimeOnly("com.fasterxml.jackson.module:jackson-module-kotlin")
+    runtimeOnly("org.postgresql:postgresql")
+}
+
+test.classpath += configurations.developmentOnly
+
+test {
+    useJUnitPlatform()
+    environment 'MICRONAUT_ENV_DEDUCTION', 'false'
+}
+
+application {
+    mainClass.set("com.itau.orange.marketplace.ApplicationKt")
+}
+java {
+    sourceCompatibility = JavaVersion.toVersion("11")
+}
+
+tasks {
+    compileKotlin {
+        kotlinOptions {
+            jvmTarget = "11"
+        }
+    }
+    compileTestKotlin {
+        kotlinOptions {
+            jvmTarget = "11"
+        }
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs("build/generated/source/proto/main/grpc")
+            srcDirs("build/generated/source/proto/main/grpckt")
+            srcDirs("build/generated/source/proto/main/java")
+        }
+
+        proto {
+            srcDirs("build/generated/source/proto/main/grpc")
+            srcDirs("build/generated/source/proto/main/grpckt")
+            srcDirs("build/generated/source/proto/main/java")
+            exclude("src/main/java")
+            exclude("src/main/proto")
+        }
+    }
+}
+
+protobuf {
+    protoc { artifact = "com.google.protobuf:protoc:3.14.0" }
+    plugins {
+        grpc { artifact = "io.grpc:protoc-gen-grpc-java:1.33.1" }
+        grpckt { artifact = "io.grpc:protoc-gen-grpc-kotlin:1.0.0:jdk7@jar"}
+    }
+    generateProtoTasks {
+        all()*.plugins {
+            grpc {}
+            grpckt {}
+        }
+    }
+}
+
+task compileProtoClasses (type: JavaCompile) {
+    source = sourceSets.main.proto.srcDirs
+    classpath = sourceSets.main.compileClasspath
+    destinationDirectory.set(file("$buildDir/protoClasses"))
+}
+
+task copyKtProtoClasses(type: Copy) {
+    from('build/classes/kotlin/main')
+    into("$buildDir/protoClasses")
+    include('**/*GrpcKt.class', '**/*GrpcKt$*.class')
+    includeEmptyDirs = false
+}
+
+def sdkFilename = "${project.name}-grpc-sdk"
+task generateGrpcBaseJar(type: Jar, dependsOn: [compileProtoClasses , copyKtProtoClasses]) {
+    from "$buildDir/protoClasses"
+    baseName = sdkFilename
+}
