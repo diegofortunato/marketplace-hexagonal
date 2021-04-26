@@ -1,4 +1,4 @@
-package com.itau.orange.marketplace.port.`in`
+package com.itau.orange.marketplace.port.input
 
 import com.itau.orange.marketplace.Customer
 import com.itau.orange.marketplace.FindAllRequest

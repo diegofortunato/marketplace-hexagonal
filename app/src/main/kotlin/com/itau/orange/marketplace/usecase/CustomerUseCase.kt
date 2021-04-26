@@ -6,11 +6,11 @@ import com.itau.orange.marketplace.FindAllResponse
 import com.itau.orange.marketplace.FindCustomerRequest
 import com.itau.orange.marketplace.SaveCustomerRequest
 import com.itau.orange.marketplace.UpdateCustomerRequest
-import com.itau.orange.marketplace.adapter.out.entity.CustomerEntity
+import com.itau.orange.marketplace.adapter.output.entity.CustomerEntity
 import com.itau.orange.marketplace.exception.CustomerNotFoundException
 import com.itau.orange.marketplace.extension.toCustomerEntity
-import com.itau.orange.marketplace.port.`in`.CustomerInputPort
-import com.itau.orange.marketplace.port.out.CustomerOutputPort
+import com.itau.orange.marketplace.port.input.CustomerInputPort
+import com.itau.orange.marketplace.port.output.CustomerOutputPort
 import io.micronaut.data.model.Pageable
 
 class CustomerUseCase(

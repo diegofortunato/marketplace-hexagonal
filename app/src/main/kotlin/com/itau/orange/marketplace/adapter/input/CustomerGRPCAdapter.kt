@@ -1,4 +1,4 @@
-package com.itau.orange.marketplace.adapter.`in`
+package com.itau.orange.marketplace.adapter.input
 
 import com.itau.orange.marketplace.Customer
 import com.itau.orange.marketplace.CustomerServiceGrpcKt
@@ -10,7 +10,7 @@ import com.itau.orange.marketplace.UpdateCustomerRequest
 import com.itau.orange.marketplace.exception.CustomerNotFoundException
 import com.itau.orange.marketplace.exception.InternalErrorException
 import com.itau.orange.marketplace.exception.InvalidCustomerIdException
-import com.itau.orange.marketplace.port.`in`.CustomerInputPort
+import com.itau.orange.marketplace.port.input.CustomerInputPort
 import io.grpc.Status
 import io.grpc.StatusException
 import kotlinx.coroutines.flow.Flow

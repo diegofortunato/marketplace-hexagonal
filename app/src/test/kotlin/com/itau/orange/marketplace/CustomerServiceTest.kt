@@ -2,9 +2,9 @@ package com.itau.orange.marketplace
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
-import com.itau.orange.marketplace.adapter.out.entity.AddressEntity
-import com.itau.orange.marketplace.adapter.out.entity.CustomerEntity
-import com.itau.orange.marketplace.port.out.CustomerOutputPort
+import com.itau.orange.marketplace.adapter.output.entity.AddressEntity
+import com.itau.orange.marketplace.adapter.output.entity.CustomerEntity
+import com.itau.orange.marketplace.port.output.CustomerOutputPort
 import com.itau.orange.marketplace.usecase.CustomerUseCase
 import io.micronaut.data.model.Pageable
 import io.mockk.every
